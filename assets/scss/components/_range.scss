@@ -45,11 +45,14 @@
         inset 0.1em 0.1em 0.2em rgb(0 0 0 / 90%),
         0.05em 0.05em 0.1em rgb(255 255 255 / 20%);
 
+    pointer-events: none;
+
     &::-webkit-slider-runnable-track {
         @include track;
     }
     &::-webkit-slider-thumb {
         @include thumb;
+        pointer-events: auto;
     }
 
     &::-moz-range-track {
@@ -57,6 +60,7 @@
     }
     &::-moz-range-thumb {
         @include thumb;
+        pointer-events: auto;
     }
 
     // Untested.
