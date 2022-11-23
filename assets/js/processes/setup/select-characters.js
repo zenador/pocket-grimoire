@@ -324,6 +324,12 @@ gameObserver.on("character-count-change", ({ detail }) => {
     countElement.textContent = wrapper.countInputs.reduce((total, input) => {
         return total + Number(input.value);
     }, 0);
+    
+    const tokenCountElement = lookupOneCached(".js--tokens--count");
+    const countElements = lookupCached(".js--character-select--count");
+    tokenCountElement.textContent = countElements.reduce((total, input) => {
+        return total + Number(input.textContent);
+    }, 0);
 
 });
 

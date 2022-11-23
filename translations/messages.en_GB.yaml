@@ -68,6 +68,7 @@ setup:
     character_select:
         title: Select Characters
         number_players: Number of players
+        number_tokens: Number of tokens
         toggle_abilities: Show character abilities
         toggle_duplicates: Allow duplicate characters
         highlight_random: Highlight random
