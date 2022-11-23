@@ -27,7 +27,6 @@ RUN wget https://get.symfony.com/cli/installer -O - | bash && mv /root/.symfony5
 WORKDIR /app
 COPY bin bin/
 COPY config config/
-COPY data data/
 COPY migrations migrations/
 COPY public public/
 COPY src src/
@@ -38,6 +37,11 @@ COPY composer.lock .
 COPY symfony.lock .
 
 RUN composer install
+
+# contents
+COPY --chmod=777 data data/
+# folder
+RUN chmod 777 data
 
 COPY --from=node /app/public/build public/build/
 
