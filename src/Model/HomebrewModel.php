@@ -12,7 +12,6 @@ class HomebrewModel
     protected $requiredKeys = [
         'name',
         'ability',
-        'image',
         'team'
     ];
     protected $filteredKeys = [
@@ -182,6 +181,10 @@ class HomebrewModel
         if ($this->isOfficialCharacter($entry)) {
             return $entry;
         }
+
+        // if (!array_key_exists('image', $entry) || $entry['image'] === '') {
+        //     $entry['image'] = "../build/img/icon/generic/" . $entry['team'] . ".png";
+        // }
 
         return array_filter($entry, function ($key) {
             return in_array($key, $this->filteredKeys);
