@@ -86,7 +86,7 @@ lookupOneCached("#character-list__list").addEventListener("click", ({ target }) 
 });
 
 gameObserver.on("character-drawn", ({ detail }) => {
-    pad.addNewCharacter(detail.character);
+    pad.addNewCharacter(detail.character, detail.total);
 });
 
 lookupOne("#show-night-order").addEventListener("change", ({ target }) => {
