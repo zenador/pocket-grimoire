@@ -72,10 +72,6 @@ class HomebrewModel
         $isValid = true;
         $teams = [];
 
-        if ($this->isMetaEntry($entry)) {
-            return $isValid;
-        }
-
         foreach ($this->requiredKeys as $key) {
 
             if (!array_key_exists($key, $entry)) {
@@ -96,6 +92,15 @@ class HomebrewModel
 
         return $isValid;
 
+    }
+
+    public function convertCharacterId(string $id): string
+    {
+        // The script tool creates IDs differently from our data.
+        // Examples: script = lil_monsta, data = lilmonsta
+        // Examples: script = al-hadikhia, data = alhadikhia
+        // The .replace() here is designed to convert their IDs to ours.
+        return preg_replace('/[-_]/', '', $id);
     }
 
     /**
@@ -127,7 +132,7 @@ class HomebrewModel
             }
 
             if ($this->isOfficialCharacter($entry)) {
-                $character = $roleRepo->findOneBy(['identifier' => $entry['id']]);
+                $character = $roleRepo->findOneBy(['identifier' => $this->convertCharacterId($entry['id'])]);
                 if (is_null($character)) {
                     $isValid = false;
                     break;

@@ -158,7 +158,7 @@ class MainController extends AbstractController
                     $characterFirstNight = array_key_exists('firstNight', $character) ? $character['firstNight'] : 0;
                     $characterOtherNight = array_key_exists('otherNight', $character) ? $character['otherNight'] : 0;
                 } else {
-                    $characterId = $character['id'];
+                    $characterId = $this->homebrewModel->convertCharacterId($character['id']);
                     $character = $this->roleRepo->findOneBy(['identifier' => $characterId]);
                     $team = $character->getTeam();
                     $teamId = $team->getIdentifier();
