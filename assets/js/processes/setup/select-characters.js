@@ -27,16 +27,18 @@ const tokenObserver = Observer.create("token");
  * @param {Object} breakdown
  *        Breakdown of the numbers for the teams.
  */
-function setTotals(breakdown) {
+function setTotals(breakdown, playerCount) {
 
     Object.entries(breakdown).forEach(([team, count]) => {
 
-        lookupCached(`[data-team="${team}"] .js--character-select--total`)
+        lookupCached(`[data-team="${team}"] .js--character-select--total, [data-team-summary="${team}"] .js--character-select--total`)
             .forEach((element) => {
                 element.textContent = count;
             });
 
     });
+
+    lookupOneCached(".js--players--total").textContent = playerCount;
 
 }
 
@@ -98,8 +100,12 @@ gameObserver.on("team-breakdown-loaded", ({ detail }) => {
 
     }
 
-    playerCount.addEventListener("input", () => setTotals(getBreakdown()));
-    setTotals(getBreakdown());
+    function getPlayerCount() {
+        return Number(playerCount.value);
+    }
+
+    playerCount.addEventListener("input", () => setTotals(getBreakdown(), getPlayerCount()));
+    setTotals(getBreakdown(), getPlayerCount());
 
     lookupOne("#player-select-random").addEventListener("click", () => {
 
@@ -321,15 +327,20 @@ gameObserver.on("character-count-change", ({ detail }) => {
         wrapper
     );
 
-    countElement.textContent = wrapper.countInputs.reduce((total, input) => {
+    var groupTokenCount = wrapper.countInputs.reduce((total, input) => {
         return total + Number(input.value);
     }, 0);
+    countElement.textContent = groupTokenCount;
+    lookupOne('[data-team-summary="'+wrapper.dataset.team+'"] .js--character-select--count').textContent = groupTokenCount;
     
-    const tokenCountElement = lookupOneCached(".js--tokens--count");
-    const countElements = lookupCached(".js--character-select--count");
-    tokenCountElement.textContent = countElements.reduce((total, input) => {
+    const tokenCountElements = lookupCached(".js--tokens--count");
+    const countElements = lookupCached("[data-team] .js--character-select--count");
+    var totalTokenCount = countElements.reduce((total, input) => {
         return total + Number(input.textContent);
     }, 0);
+    tokenCountElements.forEach((element) => {
+        element.textContent = totalTokenCount;
+    });
 
 });
 
