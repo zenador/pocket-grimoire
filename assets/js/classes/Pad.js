@@ -383,12 +383,14 @@ export default class Pad {
             token
         } = info;
 
+        const wasDead = character.getIsDead();
         const isDead = character.toggleDead(deadState);
         this.constructor
             .getToken(token)
             .classList
             .toggle("is-dead", isDead);
         observer.trigger("shroud-toggle", {
+            wasDead,
             isDead,
             token,
             character
@@ -501,6 +503,8 @@ export default class Pad {
             token,
             character
         });
+
+        character.setPlayerName(name);
 
     }
 
