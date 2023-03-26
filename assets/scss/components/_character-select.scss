@@ -40,7 +40,7 @@
 }
 
 .character-select__part {
-    opacity: 0.6;
+    opacity: 0.5;
 
     @at-root {
         :checked ~ #{&} {
@@ -106,7 +106,7 @@
 }
 
 :checked ~ .character-select__part--image {
-    background-image: radial-gradient(rgb(255 255 255 / 60%), transparent 50%);
+    background-image: radial-gradient(rgb(0 255 0 / 60%), transparent 80%);
     filter: drop-shadow(0 0 0.1em white);
 }
 
