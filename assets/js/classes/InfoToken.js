@@ -7,6 +7,8 @@ import {
     striptags
 } from "../utils/strings.js";
 
+const colours = ['brown', 'red', 'cyan', 'blue', 'dark-orange', 'green', 'dark-purple', 'lime', 'orange', 'yellow', 'purple', 'grey'];
+
 /**
  * Handles info tokens.
  */
@@ -104,6 +106,10 @@ export default class InfoToken {
 
         if (!id.startsWith(prefix)) {
             id = `${prefix}${id}`;
+        }
+
+        if (colour === undefined) {
+            colour = colours[Math.random() * colours.length>>0];
         }
 
         return {
