@@ -76,6 +76,7 @@ class MainController extends AbstractController
         $groups = [];
         $jinxes = [];
         $name = '';
+        $nights = array("first"=>[], "other"=>[]);
 
         if ($characters = $request->query->get('characters')) {
 
@@ -111,6 +112,15 @@ class MainController extends AbstractController
 
                 }
 
+                $characterFirstNight = $character->getFirstNight();
+                $characterOtherNight = $character->getOtherNight();
+                if ($characterFirstNight != 0) {
+                    $nights['first'][] = [$characterFirstNight, $character];
+                }
+                if ($characterOtherNight != 0) {
+                    $nights['other'][] = [$characterOtherNight, $character];
+                }
+
             }
 
             $name = $request->query->get('name');
@@ -137,7 +147,6 @@ class MainController extends AbstractController
                 }
 
                 if (array_key_exists('team', $character)) {
-
                     $teamId = $character['team'];
 
                     if (!array_key_exists($teamId, $teamMap)) {
@@ -146,8 +155,9 @@ class MainController extends AbstractController
 
                     $team = $teamMap[$teamId];
 
+                    $characterFirstNight = array_key_exists('firstNight', $character) ? $character['firstNight'] : 0;
+                    $characterOtherNight = array_key_exists('otherNight', $character) ? $character['otherNight'] : 0;
                 } else {
-
                     $characterId = $this->homebrewModel->normaliseId($character['id']);
                     $character = $this->roleRepo->findOneBy(['identifier' => $characterId]);
                     $team = $character->getTeam();
@@ -158,6 +168,8 @@ class MainController extends AbstractController
                         $tempJinxes[] = $jinx;
                     }
 
+                    $characterFirstNight = $character->getFirstNight();
+                    $characterOtherNight = $character->getOtherNight();
                 }
 
                 if (!array_key_exists($teamId, $groups)) {
@@ -171,10 +183,16 @@ class MainController extends AbstractController
 
                 $groups[$teamId]['characters'][] = $character;
 
+                if ($characterFirstNight != 0) {
+                    $nights['first'][] = [$characterFirstNight, $character];
+                }
+                if ($characterOtherNight != 0) {
+                    $nights['other'][] = [$characterOtherNight, $character];
+                }
+
             }
 
             foreach ($tempJinxes as $jinx) {
-
                 if (
                     in_array($jinx->getTarget()->getIdentifier(), $ids)
                     && in_array($jinx->getTrick()->getIdentifier(), $ids)
@@ -201,10 +219,18 @@ class MainController extends AbstractController
 
         }
 
+        foreach($nights as $key => $value) {
+            sort($nights[$key]);
+            $nights[$key] = array_map(function ($elem) {
+                return $elem[1];
+            }, $nights[$key]);
+        }
+
         return $this->render('pages/sheet.html.twig', [
             'name' => $name,
             'groups' => $groups,
-            'jinxes' => $jinxes
+            'jinxes' => $jinxes,
+            'nights' => $nights
         ]);
 
     }
