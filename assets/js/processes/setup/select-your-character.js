@@ -4,6 +4,7 @@ import TokenStore from "../../classes/TokenStore.js";
 import Template from "../../classes/Template.js";
 import {
     empty,
+    lookup,
     lookupOne,
     lookupOneCached,
     replaceContentsMany
@@ -51,11 +52,14 @@ gameObserver.on("character-draw", ({ detail }) => {
 
     TokenStore.ready((tokenStore) => {
 
+        const total = detail.characters.length;
+
         detail.characters.forEach((character) => {
 
             gameObserver.trigger("character-drawn", {
                 character: character.clone(),
-                isAutoAdd: true
+                isAutoAdd: true,
+                total
             });
 
         });
@@ -74,6 +78,8 @@ lookupOneCached("#character-choice").addEventListener("click", ({ target }) => {
         return;
     }
 
+    const total = lookup("button.character-choice", this).length;
+
     TokenStore.ready((tokenStore) => {
 
         // Add a clone of the character so that duplicated characters are still
@@ -81,7 +87,8 @@ lookupOneCached("#character-choice").addEventListener("click", ({ target }) => {
 
         gameObserver.trigger("character-drawn", {
             element,
-            character: tokenStore.getCharacter(element.dataset.id).clone()
+            character: tokenStore.getCharacter(element.dataset.id).clone(),
+            total
         });
 
     });
