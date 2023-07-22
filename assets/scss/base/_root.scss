@@ -1,7 +1,7 @@
 :root {
     // Fonts
     --serif-font:
-        Vinque,
+        Metamorphous,
         Georgia,
         "Times New Roman",
         Times,
@@ -26,6 +26,15 @@
     // Group Colours
     --good-team: #1d82ff;
     --evil-team: #ff1d1d;
+}
+
+:lang(vi-VI) {
+    --serif-font:
+        Vinque,
+        Georgia,
+        "Times New Roman",
+        Times,
+        serif;
 }
 
 // Hebrew serif font stack is the same as the default one, except that Vinque is
