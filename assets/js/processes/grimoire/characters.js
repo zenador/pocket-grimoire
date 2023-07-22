@@ -33,6 +33,14 @@ tokenObserver.on("character-click", ({ detail }) => {
     characterShowDialog.getElement().dataset.token = `#${identify(element)}`;
     lookupOneCached("#character-show-name").textContent = character.getName();
     lookupOneCached("#character-show-ability").textContent = character.getAbility();
+    var fnr = character.getFirstNightReminder();
+    if (fnr !== "")
+        fnr = "First Night: " + fnr;
+    lookupOneCached("#character-show-first-night-reminder").textContent = fnr;
+    var onr = character.getOtherNightReminder();
+    if (onr !== "")
+        onr = "Other Nights: " + onr;
+    lookupOneCached("#character-show-other-night-reminder").textContent = onr;
     recentReminders.dataset.coords = JSON.stringify(pad.getTokenPosition(element));
 
     characterShowDialog.show();
