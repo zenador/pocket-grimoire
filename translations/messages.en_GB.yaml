@@ -80,6 +80,7 @@ setup:
     character_choice:
         title: Select Your Character
         description: Tap any of the numbered tokens to choose your character. Darker ones have already been chosen.
+        return_confirm: Are you sure you wish to exit and return to the Grimoire?
 
     character_decision:
         title: Remember Your Character
