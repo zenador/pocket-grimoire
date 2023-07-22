@@ -13,14 +13,6 @@ import {
  */
 export default class Pad {
 
-    // /**
-    //  * The minimum offset for the tokens that are automatically added.
-    //  * @type {Number}
-    //  */
-    // static get OFFSET() {
-    //     return 15;
-    // }
-
     /**
      * Returns the actual character token from the given token button.
      *
@@ -89,6 +81,12 @@ export default class Pad {
          */
         this.reminders = [];
 
+        this.placementTotal = 0;
+        this.placementTokenSize = 0;
+        this.placementPadWidth = 0;
+        this.placementPadHeight = 0;
+        this.placementCoords = [];
+
     }
 
     /**
@@ -131,6 +129,63 @@ export default class Pad {
         return info;
 
     }
+    
+    generatePlacements(total, tokenSize, padWidth, padHeight) {
+        if (this.placementTotal == total && this.placementTokenSize == tokenSize && this.placementPadWidth == padWidth && this.placementPadHeight == padHeight)
+            return;
+
+        this.placementTotal = total;
+        this.placementTokenSize = tokenSize;
+        this.placementPadWidth = padWidth;
+        this.placementPadHeight = padHeight;
+        this.placementCoords = [];
+
+        const centreX = (padWidth - (tokenSize + 20)) / 2;
+        const centreY = (padHeight - (tokenSize + 39)) / 2;
+        const rX = centreX;
+        const rY = centreY;
+        /*
+        for (var i = 0; i < total; i++) {
+            var radians = 2 * Math.PI / total * i;
+
+            // ellipse
+            radians -= (Math.PI * 0.5);
+            const pointX = centreX + (Math.cos(radians) * rX);
+            const pointY = centreY + (Math.sin(radians) * rY);
+
+            // // rectangular ellipse
+            // radians -= (Math.PI * 0.5);
+            // const pointX = centreX + (Math.cbrt(Math.cos(radians)) * rX);
+            // const pointY = centreY + (Math.cbrt(Math.sin(radians)) * rY);
+
+            // // rectangle
+            // radians -= (Math.PI * 0.75);
+            // const pointX = centreX + ((Math.abs(Math.cos(radians)) * Math.cos(radians) - Math.abs(Math.sin(radians)) * Math.sin(radians)) * rX);
+            // const pointY = centreY + ((Math.abs(Math.cos(radians)) * Math.cos(radians) + Math.abs(Math.sin(radians)) * Math.sin(radians)) * rY);
+            
+            this.placementCoords.push([pointX, pointY]);
+        }
+        */
+        function dp(radians) {
+            return Math.sqrt( (rX * Math.sin(radians)) ** 2 + (rY * Math.cos(radians)) ** 2 );
+        }
+        const precision = 0.001;
+        var circ = 0;
+        for (var radians = 0; radians < (Math.PI * 2); radians += precision) {
+            circ += dp(radians);
+        }
+        var nextPoint = 0;
+        var run = 0;
+        for (var radians = Math.PI * -0.5; radians < (Math.PI * 1.5); radians += precision) {
+            if ((total * run / circ) >= nextPoint) {
+                nextPoint++;
+                const pointX = centreX + (Math.cos(radians) * rX);
+                const pointY = centreY + (Math.sin(radians) * rY);
+                this.placementCoords.push([pointX, pointY]);
+            }
+            run += dp(radians);
+        }
+    }
 
     /**
      * Adds a new character to {@link Pad#element} (see
@@ -149,36 +204,10 @@ export default class Pad {
             characters
         } = this;
         const info = this.addCharacter(character);
-        /*
-        const offset = Math.max(
-            this.constructor.OFFSET,
-            element.offsetWidth / 18
-        );
-        const pointX = characters.length * offset;
-        const pointY = offset;
-        */
+
         const tokenSize = lookupOne("button.token").offsetWidth;// * getComputedStyle(document.documentElement).getPropertyValue('--token-size');
-        const centreX = (element.offsetWidth - (tokenSize + 20)) / 2;
-        const centreY = (element.offsetHeight - (tokenSize + 39)) / 2;
-        const rX = centreX;
-        const rY = centreY;
-        
-        var radians = 2 * Math.PI / total * (characters.length - 1);
-
-        // ellipse
-        radians -= (Math.PI * 0.5);
-        const pointX = centreX + (Math.cos(radians) * rX);
-        const pointY = centreY + (Math.sin(radians) * rY);
-
-        // // rectangular ellipse
-        // radians -= (Math.PI * 0.5);
-        // const pointX = centreX + (Math.cbrt(Math.cos(radians)) * rX);
-        // const pointY = centreY + (Math.cbrt(Math.sin(radians)) * rY);
-
-        // // rectangle
-        // radians -= (Math.PI * 0.75);
-        // const pointX = centreX + ((Math.abs(Math.cos(radians)) * Math.cos(radians) - Math.abs(Math.sin(radians)) * Math.sin(radians)) * rX);
-        // const pointY = centreY + ((Math.abs(Math.cos(radians)) * Math.cos(radians) + Math.abs(Math.sin(radians)) * Math.sin(radians)) * rY);
+        this.generatePlacements(total, tokenSize, element.offsetWidth, element.offsetHeight);
+        const [pointX, pointY] = this.placementCoords[characters.length - 1];
 
         tokens.moveTo(
             info.token,
