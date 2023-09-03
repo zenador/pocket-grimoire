@@ -145,7 +145,7 @@ TokenStore.ready((tokenStore) => {
 
     lookupOneCached("#show-all-bluffs").addEventListener("click", ({ target }) => {
         tokenDialog.setIds(bluffs.getIds());
-        tokenDialog.setMultipleTitle(target.dataset.title);
+        // tokenDialog.setMultipleTitle(target.dataset.title);
         tokenDialog.show();
     });
 
