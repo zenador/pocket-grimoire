@@ -1,6 +1,5 @@
 import {
-    times,
-    toRadians
+    times
 } from "../utils/numbers.js";
 
 export default class Positioner {
@@ -11,32 +10,16 @@ export default class Positioner {
      */
     static layouts = {
 
-        // https://stackoverflow.com/a/26601039/557019
         ellipse(data) {
+            return computeCoordinates(data, "ellipse");
+        },
 
-            const {
-                width,
-                height,
-                tokenWidth,
-                tokenHeight,
-                total
-            } = data;
-            const coordinates = [];
-            const radiusX = (width - tokenWidth) / 2;
-            const radiusY = (height - tokenHeight) / 2;
+        rectangular_ellipse(data) {
+            return computeCoordinates(data, "rect_ellipse");
+        },
 
-            times(total, (index) => {
-
-                const theta = toRadians((360 / total) * index);
-                coordinates[index] = [
-                    radiusX + radiusX * Math.sin(theta),
-                    radiusY - radiusY * Math.cos(theta)
-                ];
-
-            });
-
-            return coordinates;
-
+        rectangle(data) {
+            return computeCoordinates(data, "rect");
         },
 
         diagonal(data) {
@@ -216,4 +199,77 @@ export default class Positioner {
 
     }
 
+}
+
+function computeCoordinates(data, placementLayout) {
+    const {
+        width,
+        height,
+        tokenWidth,
+        tokenHeight,
+        total
+    } = data;
+    const coordinates = [];
+    const rX = (width - (tokenWidth + 20)) / 2;
+    const rY = (height - (tokenHeight + 39)) / 2;
+    const centreX = rX;
+    const centreY = rY;
+    
+    function dp(radians) {
+        if (placementLayout === "ellipse")
+            return Math.sqrt( (rX * Math.sin(radians)) ** 2 + (rY * Math.cos(radians)) ** 2 );
+
+        if (placementLayout === "rect_ellipse") {
+            // return Math.sqrt( (rX * (1 / (Math.cbrt(Math.cos(radians)) ** 2)) / 3 * -Math.sin(radians)) ** 2 + (rY * (1 / (Math.cbrt(Math.sin(radians)) ** 2)) / 3 * Math.cos(radians)) ** 2 );
+            return Math.sqrt( (rX / 3 / (Math.cbrt(Math.cos(radians)) ** 2) * -Math.sin(radians)) ** 2 + (rY / 3 / (Math.cbrt(Math.sin(radians)) ** 2) * Math.cos(radians)) ** 2 );
+        }
+
+        if (radians < 0)
+            radians += (Math.PI * 2);
+        if (radians >= (Math.PI * 2))
+            radians -= (Math.PI * 2);
+
+        if (0 <= radians && radians < (Math.PI / 2))
+            return 2 * rX * Math.abs(Math.sin(2 * radians));
+        if ((Math.PI / 2) <= radians && radians < Math.PI)
+            return 2 * rY * Math.abs(Math.sin(2 * radians));
+        if (Math.PI <= radians && radians < (3 * Math.PI / 2))
+            return 2 * rX * Math.abs(Math.sin(2 * radians));
+        if ((3 * Math.PI / 2) <= radians && radians < (Math.PI * 2))
+            return 2 * rY * Math.abs(Math.sin(2 * radians));
+    }
+    var precision = 0.001;
+    if (placementLayout === "rect_ellipse")
+        precision = 0.00001;
+    var offset = Math.PI * -0.5;
+    if (placementLayout === "rect_ellipse")
+        offset += 0.000001;
+    else if (placementLayout === "rect")
+        offset = Math.PI * -0.75;
+    var circ = 0;
+    for (var radians = 0 + offset; radians < (Math.PI * 2 + offset); radians += precision) {
+        circ += dp(radians);
+    }
+    var nextPoint = 0;
+    var run = 0;
+    for (var radians = 0 + offset; radians < (Math.PI * 2 + offset); radians += precision) {
+        if ((total * run / circ) >= nextPoint) {
+            nextPoint++;
+            var pointX, pointY;
+            if (placementLayout === "ellipse") {
+                pointX = centreX + (Math.cos(radians) * rX);
+                pointY = centreY + (Math.sin(radians) * rY);
+            } else if (placementLayout === "rect_ellipse") {
+                pointX = centreX + (Math.cbrt(Math.cos(radians)) * rX);
+                pointY = centreY + (Math.cbrt(Math.sin(radians)) * rY);
+            } else if (placementLayout === "rect") {
+                pointX = centreX + ((Math.abs(Math.cos(radians)) * Math.cos(radians) - Math.abs(Math.sin(radians)) * Math.sin(radians)) * rX);
+                pointY = centreY + ((Math.abs(Math.cos(radians)) * Math.cos(radians) + Math.abs(Math.sin(radians)) * Math.sin(radians)) * rY);
+            }
+            coordinates.push([pointX, pointY]);
+        }
+        run += dp(radians);
+    }
+
+    return coordinates;
 }
