@@ -94,6 +94,12 @@ export default class CharacterToken extends Token {
         this.isUpsideDown = false;
 
         /**
+         * The name of the player with this character.
+         * @type {String}
+         */
+        this.playerName = '';
+
+        /**
          * A collection of all jinxes that may affect this character.
          * @type {Array.<Jinx>}
          */
@@ -207,6 +213,16 @@ export default class CharacterToken extends Token {
      */
     getIsUpsideDown() {
         return Boolean(this.isUpsideDown);
+    }
+
+    /**
+     * Sets the name of the player for this character.
+     *
+     * @param  {String} [state]
+     *         Optional state to set. If ommitted, the state is toggled.
+     */
+    setPlayerName(name) {
+        this.playerName = name;
     }
 
     /**
