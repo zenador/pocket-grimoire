@@ -111,6 +111,8 @@ setup:
         tokens_note: The position of the tokens in the grimoire.
         inputs_label: Clear inputs
         inputs_note: User settings for this website.
+        text_boxes_label: Clear text boxes
+        text_boxes_note: The text boxes for player messages and game log.
         details_label: Clear open/closed
         details_note: Which sections are open or closed.
         info_tokens_label: Clear custom info tokens
