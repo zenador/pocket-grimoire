@@ -163,7 +163,7 @@ export default class Dialog {
 
             const hide = target.closest("[data-dialog-hide]");
 
-            if (hide) {
+            if (hide && (target.dataset.confirm === undefined || window.confirm(target.dataset.confirm))) {
                 this.hide();
             }
 
