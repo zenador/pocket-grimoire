@@ -1,4 +1,6 @@
 import Observer from "../classes/Observer.js";
+import TokenStore from "../classes/TokenStore.js";
+import TokenDialog from "../classes/TokenDialog.js";
 import {
     lookupOne,
     lookupCached,
@@ -8,6 +10,7 @@ import {
 
 const gameObserver = Observer.create("game");
 const tokenObserver = Observer.create("token");
+const tokenDialog = TokenDialog.get();
 
 gameObserver.on("characters-selected", ({ detail }) => {
 
@@ -31,6 +34,21 @@ gameObserver.on("characters-selected", ({ detail }) => {
             .sort((a, b) => a.getOtherNight() - b.getOtherNight())
             .map((character) => character.drawNightOrder(false))
     );
+
+    TokenStore.ready((tokenStore) => {
+        [lookupOneCached("#first-night"), lookupOneCached("#other-nights")].forEach((night) => {
+            night.addEventListener("click", ({ target }) => {
+                if (!target.classList.contains("night-order__icon"))
+                    return;
+                const button = target.closest("[data-id]");
+                if (!button) {
+                    return;
+                }
+                tokenDialog.setIds([button.dataset.id]);
+                tokenDialog.show();
+            });
+        });
+    });
 
 });
 
