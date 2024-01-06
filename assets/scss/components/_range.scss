@@ -43,6 +43,7 @@
     box-shadow:
         inset 0.1em 0.1em 0.2em rgb(0 0 0 / 90%),
         0.05em 0.05em 0.1em rgb(255 255 255 / 20%);
+    pointer-events: none;
 
     @at-root {
         [dir="rtl"] & {
@@ -55,6 +56,7 @@
     }
     &::-webkit-slider-thumb {
         @include thumb;
+        pointer-events: auto;
     }
 
     &::-moz-range-track {
@@ -62,6 +64,7 @@
     }
     &::-moz-range-thumb {
         @include thumb;
+        pointer-events: auto;
     }
 
     // Untested.
