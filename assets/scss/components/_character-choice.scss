@@ -8,3 +8,11 @@
         filter: grayscale(1) brightness(0.7)
     }
 }
+
+.character-choice[data-id="lilmonsta"]:enabled, .character-choice[data-id="drunk"]:enabled, .character-choice[data-id="marionette"]:enabled {
+    background-color: red;
+}
+
+.character-choice[data-id="donkeywrangler"]:enabled {
+    background-color: white;
+}
