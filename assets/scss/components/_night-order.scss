@@ -52,6 +52,15 @@
     flex-grow: 1;
 }
 
+.night-order__players {
+    margin: 0;
+    margin-top: 0.2rem;
+    font-family: var(--serif-font);
+    flex-grow: 3;
+    font-size: 0.8rem;
+    color: #ccc;
+}
+
 .night-order__ability {
     font-size: 0.8em;
     margin: 0;
