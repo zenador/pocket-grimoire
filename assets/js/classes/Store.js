@@ -25,6 +25,7 @@ export default class Store {
         bluffs: {},
         tokens: [],
         inputs: {},
+        textBoxes: {},
         details: {},
         infoTokens: [],
         names: [],
@@ -476,6 +477,21 @@ export default class Store {
                 .entries(data.inputs)
                 .filter(([selector]) => lookup(selector).length)
         );
+        this.write();
+
+    }
+
+    /**
+     * Saves the text contents of the given text box.
+     *
+     * @param {String} which
+     *        Name of the text box.
+     * @param {String} text
+     *        Contents of the text box.
+     */
+    saveTextBox(which, text) {
+
+        this.data.textBoxes[which] = text;
         this.write();
 
     }
