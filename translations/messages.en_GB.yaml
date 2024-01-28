@@ -87,6 +87,8 @@ setup:
         add_all: Add All
         layout: Layout
         ellipse: Ellipse
+        rectangular_ellipse: Rectangular Ellipse
+        rectangle: Rectangle
         diagonal: Diagonal
         horizontal: Horizontal
         vertical: Vertical
