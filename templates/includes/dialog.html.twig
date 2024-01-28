@@ -41,9 +41,11 @@
         {% if includeHeader is not defined or includeHeader != false %}
         <div class="dialog__header">
             <h2 id="{{ headerId }}" class="dialog__title">{% block title %}{{ title|default('') }}{% endblock %}</h2>
+            {% if hideXButton is not defined or hideXButton == false %}
             <div class="dialog__hide-wrapper">
-                <button class="dialog__hide" type="button" aria-label="{{ 'dialog.close'|trans }}" data-dialog-hide>&times;</button>
+                <button class="dialog__hide" type="button" aria-label="{{ 'dialog.close'|trans }}"{% if confirmXButton is defined %} data-confirm="{{ confirmXButton }}"{% endif %} data-dialog-hide>&times;</button>
             </div>
+            {% endif %}
         </div>
         {% endif %}
         <div class="dialog__body">{% block body %}{% endblock %}</div>
