@@ -21,6 +21,7 @@ import "./processes/night-order.js";
 
 import "./processes/info-tokens.js";
 
+import "./processes/player-msgs.js";
 import "./processes/notes.js";
 
 import "./processes/acknowledgements.js";
