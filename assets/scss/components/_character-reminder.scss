@@ -186,7 +186,12 @@
 
 .character__name {
     font-family: var(--serif-font);
+    font-weight: bold;
     letter-spacing: 0.1em;
+}
+
+.character__name:lang(ru), .character__name:lang(uk), .character__name:lang(vi), .character__name:lang(zh-TW) {
+    font-weight: normal;
 }
 
 .character__player-name {
