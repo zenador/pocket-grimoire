@@ -66,6 +66,22 @@
             </div>
         </fieldset>
         {% endfor %}
+        
+        <p style="text-align: center;">
+            {% set teamsummary = {
+                townsfolk: 'groups.short.townsfolk'|trans,
+                outsider: 'groups.short.outsider'|trans,
+                minion: 'groups.short.minion'|trans,
+                demon: 'groups.short.demon'|trans,
+                traveller: 'groups.short.traveller'|trans
+            } %}
+            {% for team, name in teamsummary %}
+            <span data-team-summary="{{ team }}">
+                {{ name }}:<span class="js--character-select--count">0</span>/<span class="js--character-select--total">X</span>
+            </span>
+            {% endfor %}
+            {{ 'groups.short.all'|trans }}:<span class="js--tokens--count">0</span>/<span class="js--players--total">X</span>
+        </p>
 
         <p>
             <label for="token-layout">{{ 'setup.character_select.layout'|trans }}</label>
