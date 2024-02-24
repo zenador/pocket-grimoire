@@ -463,7 +463,7 @@ TokenStore.ready((tokenStore) => {
 // Update the list of suggested names that can be set when a token is drawn.
 
 const names = Names.create();
-
+/*
 names.on("names-added", () => {
 
     replaceContentsMany(
@@ -483,3 +483,4 @@ names.on("names-cleared", () => {
     empty(lookupOneCached("#character-name-input-options"));
 
 });
+*/
