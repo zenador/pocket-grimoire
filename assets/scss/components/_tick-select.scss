@@ -3,7 +3,7 @@
     position: relative;
 
     @at-root {
-        .tick-select__checkbox:checked + & {
+        .reminder-list__item .tick-select__checkbox:checked + & {
             &::before {
                 content: "✓";
                 position: absolute;
