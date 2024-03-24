@@ -558,10 +558,13 @@ class ImportCommand extends Command
     private function updateRole(Role $role, array $data, string $locale): Role
     {
 
+        $image = $role->getImage() ?? '';
+        $image = str_replace("/build/img/icon/", "/build/img/icons/", $image);
         $role
             ->setTranslatableLocale($locale)
             ->setName($data['name'])
-            ->setAbility($data['ability']);
+            ->setAbility($data['ability'])
+            ->setImage($image);
 
         if (array_key_exists('setup', $data)) {
             $role->setSetup($data['setup']);
