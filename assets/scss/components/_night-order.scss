@@ -15,18 +15,18 @@
         display: block;
 
         @at-root {
-            #{&} ~ #{&} {
+            & ~ & {
                 border-top: 1px solid rgb(255 255 255 / 60%);
             }
         }
     }
 
     @at-root {
-        .is-show-all > #{&} {
+        .is-show-all > & {
             display: block;
 
         }
-        .is-show-all > #{&} + #{&} {
+        .is-show-all > & + & {
             border-top: 1px solid rgb(255 255 255 / 60%);
         }
     }
@@ -42,12 +42,24 @@
 
 .night-order__icon {
     width: 2em;
+    aspect-ratio: auto 177 / 124;
+    object-fit: contain;
+    cursor: pointer;
 }
 
 .night-order__role {
     margin: 0;
     font-family: var(--serif-font);
     flex-grow: 1;
+}
+
+.night-order__players {
+    margin: 0;
+    margin-top: 0.2rem;
+    font-family: var(--serif-font);
+    flex-grow: 3;
+    font-size: 0.8rem;
+    color: #ccc;
 }
 
 .night-order__ability {

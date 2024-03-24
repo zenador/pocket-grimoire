@@ -37,7 +37,8 @@ class RoleRepository extends ServiceEntityRepository
                 'reminders' => $role->getReminders(),
                 'setup' => $role->getSetup(),
                 'ability' => $role->getAbility(),
-                'image' => $role->getImage()
+                'image' => $role->getImage(),
+                'special' => $role->getSpecial()
             ];
 
             if ($edition = $role->getEdition()) {
@@ -54,6 +55,43 @@ class RoleRepository extends ServiceEntityRepository
             return $feed;
 
         }, $this->findAll());
+
+    }
+
+    public function createTemp(array $data): Role
+    {
+
+        $role = new Role();
+        $keys = [
+            'id',
+            'name',
+            'edition',
+            // 'team',
+            'firstNight',
+            'firstNightReminder',
+            'otherNight',
+            'otherNightReminder',
+            'reminders',
+            'remindersGlobal',
+            'setup',
+            'ability',
+            'image'
+        ];
+        $map = ['id' => 'identifier'];
+
+        foreach ($keys as $key) {
+
+            if (!array_key_exists($key, $data)) {
+                continue;
+            }
+
+            $mapped = array_key_exists($key, $map) ? $map[$key] : $key;
+            $method = 'set' . ucfirst($mapped);
+            $role->$method($data[$key]);
+
+        }
+
+        return $role;
 
     }
 

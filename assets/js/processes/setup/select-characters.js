@@ -17,26 +17,31 @@ import {
     clamp,
     times
 } from "../../utils/numbers.js";
+import {
+    supplant
+} from "../../utils/strings.js";
 
 const gameObserver = Observer.create("game");
 const tokenObserver = Observer.create("token");
 
 /**
- * Sets the totals for each team based on the breakdown that#s given.
+ * Sets the totals for each team based on the breakdown that's given.
  *
  * @param {Object} breakdown
  *        Breakdown of the numbers for the teams.
  */
-function setTotals(breakdown) {
+function setTotals(breakdown, playerCount) {
 
     Object.entries(breakdown).forEach(([team, count]) => {
 
-        lookupCached(`[data-team="${team}"] .js--character-select--total`)
+        lookupCached(`[data-team="${team}"] .js--character-select--total, [data-team-summary="${team}"] .js--character-select--total`)
             .forEach((element) => {
                 element.textContent = count;
             });
 
     });
+
+    lookupOneCached(".js--players--total").textContent = playerCount;
 
 }
 
@@ -49,10 +54,6 @@ function setTotals(breakdown) {
  *        The number of randomly selected items that should be highlighted.
  */
 function highlightRandomInTeam(team, count) {
-
-    if (!count) {
-        return;
-    }
 
     // Don't cache this since they will change if a different edition is chosen.
     const inputs = lookup(`[data-team="${team}"] [name="character"]`);
@@ -102,8 +103,12 @@ gameObserver.on("team-breakdown-loaded", ({ detail }) => {
 
     }
 
-    playerCount.addEventListener("input", () => setTotals(getBreakdown()));
-    setTotals(getBreakdown());
+    function getPlayerCount() {
+        return Number(playerCount.value);
+    }
+
+    playerCount.addEventListener("input", () => setTotals(getBreakdown(), getPlayerCount()));
+    setTotals(getBreakdown(), getPlayerCount());
 
     lookupOne("#player-select-random").addEventListener("click", () => {
 
@@ -314,6 +319,8 @@ gameObserver.on("character-toggle", ({ detail }) => {
 
 });
 
+const validationInput = lookupOne("#player-select-validation");
+
 gameObserver.on("character-count-change", ({ detail }) => {
 
     const {
@@ -325,9 +332,19 @@ gameObserver.on("character-count-change", ({ detail }) => {
         wrapper
     );
 
-    countElement.textContent = wrapper.countInputs.reduce((total, input) => {
+    var groupTokenCount = wrapper.countInputs.reduce((total, input) => {
         return total + Number(input.value);
     }, 0);
+    countElement.textContent = groupTokenCount;
+    lookupOne('[data-team-summary="'+wrapper.dataset.team+'"] .js--character-select--count').textContent = groupTokenCount;
+    
+    const tokenCountElement = lookupOneCached(".js--tokens--count");
+    const countElements = lookupCached("[data-team] .js--character-select--count");
+    tokenCountElement.textContent = countElements.reduce((total, input) => {
+        return total + Number(input.textContent);
+    }, 0);
+
+    validationInput.setCustomValidity("");
 
 });
 
@@ -335,7 +352,8 @@ lookupOne("#player-select").addEventListener("submit", (e) => {
 
     e.preventDefault();
 
-    const ids = lookup(":checked", e.target).map(({ value }) => value);
+    const ids = lookup(".js--character-select--input:checked", e.target)
+        .map(({ value }) => value);
 
     TokenStore.ready((tokenStore) => {
 
@@ -359,22 +377,50 @@ lookupOne("#player-select").addEventListener("submit", (e) => {
             })
             .flat();
 
-        gameObserver.trigger("character-draw", {
-            characters: filtered,
-            isShowAll: e.submitter.id === "player-select-all"
+        const bagDisabled = filtered.filter((character) => {
+
+            const special = character.getSpecial();
+
+            return (
+                special
+                && Array.isArray(special)
+                && special.find(({ name, type }) => {
+                    return name === "bag-disabled" && type === "selection";
+                })
+            );
+
         });
 
-        Dialog.create(lookupOneCached("#character-select")).hide();
+        if (bagDisabled.length) {
+
+            validationInput.setCustomValidity(supplant(
+                window.I18N.bagDisabled,
+                [bagDisabled.map((character) => character.getName()).join(", ")]
+            ));
+            validationInput.form.reportValidity();
+
+        } else {
+
+            validationInput.setCustomValidity("");
+
+            const isShowAll = Boolean(e.submitter?.id === "player-select-all");
+
+            gameObserver.trigger("character-draw", {
+                isShowAll,
+                characters: (
+                    isShowAll
+                    ? shuffle(filtered)
+                    : filtered
+                )
+            });
+
+            Dialog.create(lookupOneCached("#character-select")).hide();
+
+        }
 
     });
 
 });
-
-// lookupOne("#player-select-all").addEventListener("click", () => {
-//
-//
-//
-// });
 
 tokenObserver.on("toggle-jinx-active", ({ detail }) => {
 

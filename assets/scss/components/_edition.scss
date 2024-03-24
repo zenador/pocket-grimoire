@@ -81,6 +81,25 @@
     }
 }
 
+.edition__row--nights {
+    display: flex;
+}
+
+.edition__role--nights {
+    display: inline-block;
+}
+
+.edition__role--nights > * {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.edition__role--nights img {
+    width: 15pt;
+    aspect-ratio: 1/1;
+    object-fit: contain;
+}
+
 .edition__icon,
 .edition__name,
 .edition__ability {
@@ -98,6 +117,11 @@
 
 .edition__icon--trick {
     grid-area: trick;
+}
+
+.edition__image {
+    aspect-ratio: auto 177 / 124;
+    object-fit: contain;
 }
 
 .edition__ability {

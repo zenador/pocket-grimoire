@@ -166,14 +166,32 @@
     }
 }
 
+.character__ghost-vote {
+    color: #fff;
+    width: 30%;
+    transform: translateY(100%);
+
+    @at-root {
+        .is-voteless & {
+            display: none;
+        }
+    }
+}
+
 .character__icon {
     width: 90%;
+    aspect-ratio: 1/1;
+    object-fit: contain;
 }
 
 .character__name {
     font-family: var(--serif-font);
     font-weight: bold;
     letter-spacing: 0.1em;
+}
+
+.character__name:lang(ru), .character__name:lang(uk), .character__name:lang(vi), .character__name:lang(zh-TW) {
+    font-weight: normal;
 }
 
 .character__player-name {
@@ -191,6 +209,16 @@
 
     &:empty {
         display: none;
+    }
+
+    @at-root {
+        .is-upside-down > & {
+            // Just setting --shadow-rotation doesn't work.
+            --shadow-amount: var(--shadow-offset);
+            top: auto;
+            bottom: 100%;
+            transform: rotate(180deg);
+        }
     }
 }
 

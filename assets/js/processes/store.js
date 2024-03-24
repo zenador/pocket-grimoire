@@ -1,9 +1,11 @@
 import Store from "../classes/Store.js";
 import Observer from "../classes/Observer.js";
 import TokenStore from "../classes/TokenStore.js";
-import Bluffs from "../classes/Bluffs.js";
+// import Bluffs from "../classes/Bluffs.js";
+import BluffsGroups from "../classes/BluffsGroups.js";
 import Dialog from "../classes/Dialog.js";
 import InfoToken from "../classes/InfoToken.js";
+import Names from "../classes/Names.js";
 import {
     lookup,
     lookupOne,
@@ -24,6 +26,7 @@ const infoTokenObserver = Observer.create("info-token");
 
 const padElement = lookupOneCached(".js--pad");
 const pad = padElement.pad;
+const names = Names.create();
 
 gameObserver.on("characters-selected", ({ detail }) => {
 
@@ -101,11 +104,23 @@ tokenObserver.on("rotate-toggle", ({ detail }) => {
 });
 
 tokenObserver.on("set-player-name", ({ detail }) => {
+
     store.setPlayerName(pad.getCharacterByToken(detail.token), detail.name);
+    names.add(detail.name);
+
+});
+
+tokenObserver.on("ghost-vote-toggle", ({ detail }) => {
+
+    store.setGhostVote(
+        pad.getCharacterByToken(detail.token),
+        detail.hasGhostVote
+    );
+
 });
 
 tokenObserver.on("bluff", ({ detail }) => {
-    store.setBluff(detail.button, detail.character);
+    store.setBluffs(detail.data);
 });
 
 infoTokenObserver.on("info-token-added", ({ detail }) => {
@@ -141,7 +156,7 @@ const {
 
 body.addEventListener("input", ({ target }) => {
 
-    const input = target.closest("input,select");
+    const input = target.closest("input,select,textarea");
 
     if (!input.hasAttribute("data-no-store")) {
         store.saveInput(input);
@@ -169,9 +184,12 @@ TokenStore.ready((tokenStore) => {
             name: info.name,
             characters: info.characters
                 .map((item) => (
-                    typeof item === "string"
-                    ? tokenStore.getCharacter(item)
-                    : tokenStore.createCustomCharacter(item)
+                    tokenStore.getCharacter(
+                        typeof item === "string"
+                        ? item
+                        : item.id
+                    )
+                    || tokenStore.createCustomCharacter(item)
                 ))
                 .filter(Boolean),
             game: info.game
@@ -190,7 +208,8 @@ TokenStore.ready((tokenStore) => {
         zIndex,
         isDead,
         isUpsideDown,
-        playerName
+        playerName,
+        ghostVote
     }) => {
 
         const isCharacter = TokenStore.isCharacterId(id);
@@ -199,14 +218,19 @@ TokenStore.ready((tokenStore) => {
             ? pad.addCharacter(tokenStore.getCharacterClone(id))
             : pad.addReminder(tokenStore.getReminderClone(id))
         );
+        const {
+            token,
+            character
+        } = info;
 
-        pad.moveToken(info.token, left, top, zIndex);
+        pad.moveToken(token, left, top, zIndex);
 
         if (isCharacter) {
 
-            pad.toggleDead(info.character, Boolean(isDead));
-            pad.rotate(info.character, Boolean(isUpsideDown));
-            pad.setPlayerName(info.character, playerName);
+            pad.toggleDead(character, Boolean(isDead));
+            pad.rotate(character, Boolean(isUpsideDown));
+            pad.setPlayerName(character, playerName);
+            pad.setGhostVote(character, Boolean(ghostVote));
 
         }
 
@@ -219,20 +243,25 @@ TokenStore.ready((tokenStore) => {
     pad.setZIndex(finalZIndex);
 
     // Re-set the bluffs.
+    // Convert the previous bluffs format into the new one.
 
-    const bluffs = Bluffs.get();
+    let {
+        bluffs
+    } = storeData;
 
-    Object.entries(storeData.bluffs).forEach(([selector, characterId]) => {
+    if (!Object.keys(bluffs).length) {
+        bluffs = BluffsGroups.getEmptyData();
+    }
 
-        const character = tokenStore.getCharacter(characterId);
+    if (typeof bluffs["#bluff-1"] === "string") {
 
-        if (!character || !bluffs) {
-            return;
-        }
+        const empty = BluffsGroups.getEmptyData();
+        empty.groups[0].set = Object.values(bluffs);
+        bluffs = empty;
 
-        bluffs.display(selector, character);
+    }
 
-    });
+    BluffsGroups.get().ready(bluffs);
 
     // Re-populate the inputs.
 

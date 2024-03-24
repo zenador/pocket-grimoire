@@ -38,6 +38,26 @@
         id: 'votetoday',
         colour: 'dark-orange',
         markup: 'info_tokens.info_tokens.votetoday'|trans
+    },
+    {
+        id: 'opg',
+        colour: 'cyan',
+        markup: 'Use your <strong>once-per-game</strong> ability now?'
+    },
+    {
+        id: 'choose1player',
+        colour: 'yellow',
+        markup: 'Choose <strong>1</strong> player'
+    },
+    {
+        id: 'choose2players',
+        colour: 'brown',
+        markup: 'Choose <strong>2</strong> players'
+    },
+    {
+        id: 'choosecharacter',
+        colour: 'lime',
+        markup: 'Choose <strong>1</strong> character'
     }
 ] %}
 
@@ -49,6 +69,9 @@
     <ul class="button-list" id="info-token-button-holder" data-info-tokens='{{ infoTokens|json_encode() }}'></ul>
     <h3 class="info-token-heading">{{ 'info_tokens.custom'|trans }}</h3>
     <ul class="button-list" id="info-token-custom-holder">
+        <li>
+            <button type="button" class="button button--full-height" id="show-tokens-info" data-dialog="#token-list" disabled>{{ 'grimoire.grimoire.show_tokens'|trans }}</button>
+        </li>
         <li>
             <button type="button" class="button button--full-height" id="add-info-token">{{ 'info_tokens.add_custom'|trans }}</button>
         </li>

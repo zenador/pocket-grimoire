@@ -119,8 +119,16 @@ export default class Dialog {
             attributeFilter: ["open"]
         });
 
-        this.addListeners();
+        this.run();
 
+    }
+
+    /**
+     * Processes everything that would need to happen when the dialog instance
+     * is created. This allows us to subclass {@link Dialog} more easily.
+     */
+    run() {
+        this.addListeners();
     }
 
     /**
@@ -155,7 +163,7 @@ export default class Dialog {
 
             const hide = target.closest("[data-dialog-hide]");
 
-            if (hide) {
+            if (hide && (target.dataset.confirm === undefined || window.confirm(target.dataset.confirm))) {
                 this.hide();
             }
 

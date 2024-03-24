@@ -15,7 +15,9 @@ use App\Repository\JinxRepository;
 use App\Repository\TeamRepository;
 use App\Repository\HomebrewRepository;
 use App\Entity\Homebrew;
+use App\Entity\Jinx;
 use App\Model\HomebrewModel;
+use App\Model\GameModel;
 
 class MainController extends AbstractController
 {
@@ -69,6 +71,7 @@ class MainController extends AbstractController
      */
     public function sheetAction(
         Request $request,
+        GameModel $gameModel,
         EntityManagerInterface $em
     ): Response {
 
@@ -76,6 +79,7 @@ class MainController extends AbstractController
         $groups = [];
         $jinxes = [];
         $name = '';
+        $nights = array("first"=>[], "other"=>[]);
 
         if ($characters = $request->query->get('characters')) {
 
@@ -111,6 +115,15 @@ class MainController extends AbstractController
 
                 }
 
+                $characterFirstNight = $character->getFirstNight();
+                $characterOtherNight = $character->getOtherNight();
+                if ($characterFirstNight != 0) {
+                    $nights['first'][] = [$characterFirstNight, $character];
+                }
+                if ($characterOtherNight != 0) {
+                    $nights['other'][] = [$characterOtherNight, $character];
+                }
+
             }
 
             $name = $request->query->get('name');
@@ -124,6 +137,23 @@ class MainController extends AbstractController
             // Might save a little processing power.
             $teamMap = [];
 
+            // Work out the IDs that we're using.
+            $ids = array_reduce($homebrew->getJson(), function (array $carry, array $character): array {
+
+                if (
+                    array_key_exists('id', $character)
+                    && !in_array($character['id'], $carry)
+                    && !$this->homebrewModel->isMetaEntry($character)
+                ) {
+                    $carry[] = $character['id'];
+                }
+
+                return $carry;
+
+            }, []);
+
+            $tempJinxes = [];
+
             foreach ($homebrew->getJson() as $character) {
 
                 if ($this->homebrewModel->isMetaEntry($character)) {
@@ -133,13 +163,71 @@ class MainController extends AbstractController
 
                 }
 
-                $teamId = $character['team'];
+                if (array_key_exists('team', $character)) {
+                    $teamId = $character['team'];
 
-                if (!array_key_exists($teamId, $teamMap)) {
-                    $teamMap[$teamId] = $this->teamRepo->findOneBy(['identifier' => $teamId]);
+                    if (!array_key_exists($teamId, $teamMap)) {
+                        $teamMap[$teamId] = $this->teamRepo->findOneBy(['identifier' => $teamId]);
+                    }
+
+                    $team = $teamMap[$teamId];
+
+                    $characterFirstNight = array_key_exists('firstNight', $character) ? $character['firstNight'] : 0;
+                    $characterOtherNight = array_key_exists('otherNight', $character) ? $character['otherNight'] : 0;
+                } else {
+                    $characterId = $this->homebrewModel->normaliseId($character['id']);
+                    $character = $this->roleRepo->findOneBy(['identifier' => $characterId]);
+                    $team = $character->getTeam();
+                    $teamId = $team->getIdentifier();
+
+                    if (!in_array($characterId, $ids)) {
+                        $ids[] = $characterId;
+                    }
+
+                    foreach ($character->getJinxes() as $jinx) {
+                        $tempJinxes[] = $jinx;
+                    }
+
+                    $characterFirstNight = $character->getFirstNight();
+                    $characterOtherNight = $character->getOtherNight();
                 }
 
-                $team = $teamMap[$teamId];
+                // Convert any homebrew jinxes into Jinx entities. We need to
+                // ensure that the character data has an ID to prevent an error
+                // appearing if an older upload URL is checked.
+                if (is_array($character) && array_key_exists('jinxes', $character) && array_key_exists('id', $character)) {
+
+                    $characterJinxes = [];
+
+                    foreach ($character['jinxes'] as $maybeJinx) {
+
+                        if (is_array($maybeJinx)) {
+
+                            $target = (
+                                $this->roleRepo->findOneBy(['identifier' => $character['id']])
+                                ?? $this->roleRepo->createTemp($character)
+                            );
+                            $trick = (
+                                $this->roleRepo->findOneBy(['identifier' => $maybeJinx['id']])
+                                ?? $this->roleRepo->createTemp($maybeJinx)
+                            );
+
+                            $jinx = (new Jinx())
+                                ->setTarget($target)
+                                ->setTrick($trick)
+                                ->setReason($maybeJinx['reason']);
+                            $tempJinxes[] = $jinx;
+                            $characterJinxes[] = $jinx;
+
+                        } else {
+                            $characterJinxes[] = $maybeJinx;
+                        }
+
+                    }
+
+                    $character['jinxes'] = $characterJinxes;
+
+                }
 
                 if (!array_key_exists($teamId, $groups)) {
 
@@ -151,6 +239,26 @@ class MainController extends AbstractController
                 }
 
                 $groups[$teamId]['characters'][] = $character;
+
+                if ($characterFirstNight != 0) {
+                    $nights['first'][] = [$characterFirstNight, $character];
+                }
+                if ($characterOtherNight != 0) {
+                    $nights['other'][] = [$characterOtherNight, $character];
+                }
+
+            }
+
+            foreach ($tempJinxes as $jinx) {
+                if (
+                    in_array($jinx->getTarget()->getIdentifier(), $ids)
+                    && in_array($jinx->getTrick()->getIdentifier(), $ids)
+                ) {
+
+                    $jinx->setActive(true);
+                    $jinxes[] = $jinx;
+
+                }
 
             }
 
@@ -168,10 +276,19 @@ class MainController extends AbstractController
 
         }
 
+        foreach($nights as $key => $value) {
+            sort($nights[$key]);
+            $nights[$key] = array_map(function ($elem) {
+                return $elem[1];
+            }, $nights[$key]);
+        }
+
         return $this->render('pages/sheet.html.twig', [
             'name' => $name,
             'groups' => $groups,
-            'jinxes' => $jinxes
+            'jinxes' => $jinxes,
+            'nights' => $nights,
+            'breakdown' => $gameModel->getTransposedFeed(),
         ]);
 
     }
@@ -187,14 +304,17 @@ class MainController extends AbstractController
 
         if ($data = json_decode($request->getContent(), true)) {
 
+            $invalidReasons = [];
+
             if (
                 !is_array($data)
-                || !$this->homebrewModel->validateAllEntries($data)
+                || !$this->homebrewModel->validateAllEntries($data, $invalidReasons)
             ) {
 
                 return new JsonResponse([
                     'success' => false,
-                    'message' => $translator->trans('messages.invalid_data')
+                    'message' => $translator->trans('messages.invalid_data'),
+                    'reasons' => $invalidReasons
                 ]);
 
             }
@@ -219,6 +339,60 @@ class MainController extends AbstractController
         return new JsonResponse([
             'success' => false,
             'message' => $translator->trans('messages.no_data')
+        ]);
+
+    }
+
+    /**
+     * @Route("/", name="tokens_stub")
+     */
+    public function tokensStubAction(Request $request): Response
+    {
+        return $this->redirectToRoute('tokens', $request->query->all(), 301);
+    }
+
+    /**
+     * @Route("/{_locale}/tokens", name="tokens")
+     */
+    public function tokensAction(
+        Request $request,
+        RoleRepository $roleRepo,
+        TeamRepository $teamRepo,
+        TranslatorInterface $translator
+    ) {
+
+        $feed = $roleRepo->getFeed();
+        $roles = [];
+
+        foreach ($teamRepo->getTeamIds(true) as $id) {
+
+            $roles[$id] = [
+                'name' => $translator->trans('groups.' . $id),
+                'tokens' => []
+            ];
+
+        }
+
+        foreach ($roleRepo->getFeed() as $token) {
+
+            $team = $token['team'];
+
+            if (!array_key_exists($team, $roles)) {
+                continue;
+            }
+
+            $roles[$team]['tokens'][] = $token;
+
+        }
+
+        foreach ($roles as $team => $data) {
+            usort($data['tokens'], function ($a, $b) {
+                return $a['name'] <=> $b['name'];
+            });
+        }
+
+        return $this->render('pages/tokens.html.twig', [
+            'roles' => $roles
         ]);
 
     }
