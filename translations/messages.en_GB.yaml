@@ -31,6 +31,14 @@ groups:
     demon: Demons
     traveller: Travellers
     fabled: Fabled
+    short:
+        townsfolk: TF
+        outsider: O
+        minion: M
+        demon: D
+        traveller: TR
+        fabled: F
+        all: A
 
 messages:
     good_team: Good team
