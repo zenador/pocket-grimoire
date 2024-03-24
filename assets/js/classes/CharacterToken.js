@@ -99,6 +99,12 @@ export default class CharacterToken extends Token {
          * @type {Boolean}
          */
         this.hasGhostVote = true;
+        
+        /**
+         * The name of the player with this character.
+         * @type {String}
+         */
+        this.playerName = '';
 
         /**
          * A collection of all jinxes that may affect this character.
@@ -249,6 +255,16 @@ export default class CharacterToken extends Token {
      */
     getHasGhostVote() {
         return Boolean(this.hasGhostVote);
+    }
+        
+    /**
+     * Sets the name of the player for this character.
+     *
+     * @param  {String} [state]
+     *         Optional state to set. If ommitted, the state is toggled.
+     */
+    setPlayerName(name) {
+        this.playerName = name;
     }
 
     /**
